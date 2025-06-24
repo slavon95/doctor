@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Анализ крови</title>
+  <style>
+    body {
+      background-color: #e6f7ff;
+      font-family: Arial, sans-serif;
+    }
+    table {
+      border-collapse: collapse;
+      width: 60%;
+      margin: 50px auto;
+      table-layout: fixed;
+    }
+    th, td {
+      border: 1px solid #aaa;
+      padding: 10px;
+      text-align: center;
+    }
+    input[type="text"] {
+      width: 90%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+    .error {
+      border: 2px solid red;
+    }
+    .result-good {
+      background-color: #c8f7c5;
+    }
+    .result-bad {
+      background-color: #f7c5c5;
+    }
+    .buttons {
+      text-align: center;
+      margin-top: 20px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: black;
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Название анализа</th>
+        <th>Значение</th>
+        <th>Результат</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Гемоглобин</td>
+        <td><input type="text" id="hemoglobin" /></td>
+        <td id="result-hemo"></td>
+      </tr>
+      <tr>
+        <td>Лейкоциты</td>
+        <td><input type="text" id="leukocytes" /></td>
+        <td id="result-leuko"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="buttons">
+    <button onclick="calculate()">Рассчитать</button>
+    <button onclick="clearAll()">Очистить</button>
+  </div>
+
+  <script>
+    function sanitizeInput(value) {
+      return value.replace(/\s/g, '').replace(',', '.');
+    }
+
+    function isAllowedKey(event) {
+  const input = event.target;
+  const value = input.value;
+  const key = event.key;
+  const allowedDigits = '0123456789';
+  const specialKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+
+  if (allowedDigits.includes(key) || specialKeys.includes(key)) return true;
+
+  const isSeparator = key === '.' || key === ',';
+  const alreadyHasSeparator = value.includes('.') || value.includes(',');
+
+  if (
+    isSeparator &&
+    !alreadyHasSeparator &&
+    value.length > 0 // ⬅️ запрещаем ставить точку/запятую первой
+  ) {
+    return true;
+  }
+
+  event.preventDefault();
+  return false;
+    }
+
+    function validateAndParse(inputElement, min, max) {
+      const raw = sanitizeInput(inputElement.value);
+      const number = parseFloat(raw);
+      const isValid = !isNaN(number);
+      inputElement.classList.toggle('error', !isValid);
+      return isValid ? number : null;
+    }
+
+    function calculate() {
+      const hemoglobinInput = document.getElementById('hemoglobin');
+      const leukocytesInput = document.getElementById('leukocytes');
+      const resultHemo = document.getElementById('result-hemo');
+      const resultLeuko = document.getElementById('result-leuko');
+
+      const hemo = validateAndParse(hemoglobinInput, 80, 140);
+      const leuko = validateAndParse(leukocytesInput, 1, 10);
+
+      resultHemo.className = '';
+      resultLeuko.className = '';
+
+      if (hemo !== null) {
+        if (hemo >= 80 && hemo <= 140) {
+          resultHemo.textContent = 'всё хорошо';
+          resultHemo.classList.add('result-good');
+        } else {
+          resultHemo.textContent = 'выше или ниже нормы';
+          resultHemo.classList.add('result-bad');
+        }
+      } else {
+        resultHemo.textContent = '';
+      }
+
+      if (leuko !== null) {
+        if (leuko >= 1 && leuko <= 10) {
+          resultLeuko.textContent = 'всё хорошо';
+          resultLeuko.classList.add('result-good');
+        } else {
+          resultLeuko.textContent = 'выше или ниже нормы';
+          resultLeuko.classList.add('result-bad');
+        }
+      } else {
+        resultLeuko.textContent = '';
+      }
+    }
+
+    function clearAll() {
+      document.getElementById('hemoglobin').value = '';
+      document.getElementById('leukocytes').value = '';
+      document.getElementById('result-hemo').textContent = '';
+      document.getElementById('result-leuko').textContent = '';
+      document.getElementById('result-hemo').className = '';
+      document.getElementById('result-leuko').className = '';
+      document.getElementById('hemoglobin').classList.remove('error');
+      document.getElementById('leukocytes').classList.remove('error');
+    }
+
+    window.onload = function () {
+      document.getElementById('hemoglobin').addEventListener('keydown', isAllowedKey);
+      document.getElementById('leukocytes').addEventListener('keydown', isAllowedKey);
+    };
+  </script>
+
+</body>
+</html>

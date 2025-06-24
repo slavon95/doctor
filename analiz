@@ -5,171 +5,201 @@
   <title>Анализ крови</title>
   <style>
     body {
-      background-color: #e6f7ff;
-      font-family: Arial, sans-serif;
+      font-family: "Segoe UI", sans-serif;
+      background-color: #e8f4fc;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
     }
+
     table {
       border-collapse: collapse;
-      width: 60%;
-      margin: 50px auto;
+      width: 700px;
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
       table-layout: fixed;
     }
+
     th, td {
-      border: 1px solid #aaa;
-      padding: 10px;
+      padding: 16px;
       text-align: center;
+      border-bottom: 1px solid #d0e6f7;
     }
+
+    th:nth-child(1),
+    td:nth-child(1) {
+      width: 30%;
+    }
+
+    th:nth-child(2),
+    td:nth-child(2) {
+      width: 20%;
+    }
+
+    th:nth-child(3),
+    td:nth-child(3) {
+      width: 50%;
+    }
+
+    th {
+      background-color: #b9def0;
+      font-size: 18px;
+    }
+
     input[type="text"] {
-      width: 90%;
-      padding: 5px;
-      box-sizing: border-box;
-    }
-    .error {
-      border: 2px solid red;
-    }
-    .result-good {
-      background-color: #c8f7c5;
-    }
-    .result-bad {
-      background-color: #f7c5c5;
-    }
-    .buttons {
-      text-align: center;
-      margin-top: 20px;
-    }
-    button {
-      background-color: #4CAF50;
-      color: black;
-      padding: 10px 20px;
-      margin: 5px;
-      border: none;
-      cursor: pointer;
+      padding: 8px;
       font-size: 16px;
-      border-radius: 5px;
+      width: 100px;
+      text-align: center;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      transition: border 0.3s;
     }
+
+    input.invalid {
+      border-color: red;
+    }
+
+    td.result {
+      font-weight: bold;
+      transition: background-color 0.3s, color 0.3s;
+      border-radius: 6px;
+      word-wrap: break-word;
+    }
+
+    .result.good {
+      background-color: #d4f6d1;
+      color: #267d2b;
+    }
+
+    .result.bad {
+      background-color: #f9d0d0;
+      color: #b00020;
+    }
+
+    .button-container {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      margin: 0 10px;
+      cursor: pointer;
+      background-color: #7cd1a9;
+      color: #000;
+      transition: background-color 0.3s;
+    }
+
     button:hover {
-      background-color: #45a049;
+      background-color: #6bb99a;
     }
   </style>
 </head>
 <body>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Название анализа</th>
-        <th>Значение</th>
-        <th>Результат</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Гемоглобин</td>
-        <td><input type="text" id="hemoglobin" /></td>
-        <td id="result-hemo"></td>
-      </tr>
-      <tr>
-        <td>Лейкоциты</td>
-        <td><input type="text" id="leukocytes" /></td>
-        <td id="result-leuko"></td>
-      </tr>
-    </tbody>
-  </table>
+  <div>
+    <table>
+      <thead>
+        <tr>
+          <th>Название анализа</th>
+          <th>Значение</th>
+          <th>Результат</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Гемоглобин</td>
+          <td><input type="text" id="hemoglobin" onkeydown="return isAllowedKey(event)"></td>
+          <td class="result" id="hemoglobin-result"></td>
+        </tr>
+        <tr>
+          <td>Лейкоциты</td>
+          <td><input type="text" id="leukocytes" onkeydown="return isAllowedKey(event)"></td>
+          <td class="result" id="leukocytes-result"></td>
+        </tr>
+      </tbody>
+    </table>
 
-  <div class="buttons">
-    <button onclick="calculate()">Рассчитать</button>
-    <button onclick="clearAll()">Очистить</button>
+    <div class="button-container">
+      <button onclick="calculate()">Рассчитать</button>
+      <button onclick="clearFields()">Очистить</button>
+    </div>
   </div>
 
   <script>
-    function sanitizeInput(value) {
-      return value.replace(/\s/g, '').replace(',', '.');
-    }
-
     function isAllowedKey(event) {
-  const input = event.target;
-  const value = input.value;
-  const key = event.key;
-  const allowedDigits = '0123456789';
-  const specialKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+      const input = event.target;
+      const value = input.value;
+      const key = event.key;
+      const allowedDigits = '0123456789';
+      const specialKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
 
-  if (allowedDigits.includes(key) || specialKeys.includes(key)) return true;
+      if (allowedDigits.includes(key) || specialKeys.includes(key)) return true;
 
-  const isSeparator = key === '.' || key === ',';
-  const alreadyHasSeparator = value.includes('.') || value.includes(',');
+      const isSeparator = key === '.' || key === ',';
+      const alreadyHasSeparator = value.includes('.') || value.includes(',');
 
-  if (
-    isSeparator &&
-    !alreadyHasSeparator &&
-    value.length > 0 // ⬅️ запрещаем ставить точку/запятую первой
-  ) {
-    return true;
-  }
+      // Запрещаем точку или запятую в начале и вторую
+      if (
+        isSeparator &&
+        !alreadyHasSeparator &&
+        value.length > 0
+      ) {
+        return true;
+      }
 
-  event.preventDefault();
-  return false;
-    }
-
-    function validateAndParse(inputElement, min, max) {
-      const raw = sanitizeInput(inputElement.value);
-      const number = parseFloat(raw);
-      const isValid = !isNaN(number);
-      inputElement.classList.toggle('error', !isValid);
-      return isValid ? number : null;
+      event.preventDefault();
+      return false;
     }
 
     function calculate() {
-      const hemoglobinInput = document.getElementById('hemoglobin');
-      const leukocytesInput = document.getElementById('leukocytes');
-      const resultHemo = document.getElementById('result-hemo');
-      const resultLeuko = document.getElementById('result-leuko');
+      checkValue("hemoglobin", 80, 140);
+      checkValue("leukocytes", 1, 10);
+    }
 
-      const hemo = validateAndParse(hemoglobinInput, 80, 140);
-      const leuko = validateAndParse(leukocytesInput, 1, 10);
+    function checkValue(id, min, max) {
+      const input = document.getElementById(id);
+      const result = document.getElementById(id + "-result");
+      let value = input.value.trim().replace(',', '.');
 
-      resultHemo.className = '';
-      resultLeuko.className = '';
+      value = value.replace(/\s/g, '');
 
-      if (hemo !== null) {
-        if (hemo >= 80 && hemo <= 140) {
-          resultHemo.textContent = 'всё хорошо';
-          resultHemo.classList.add('result-good');
-        } else {
-          resultHemo.textContent = 'выше или ниже нормы';
-          resultHemo.classList.add('result-bad');
-        }
-      } else {
-        resultHemo.textContent = '';
+      if (!/^\d+(\.\d+)?$/.test(value)) {
+        input.classList.add("invalid");
+        result.textContent = '';
+        result.className = "result";
+        return;
       }
 
-      if (leuko !== null) {
-        if (leuko >= 1 && leuko <= 10) {
-          resultLeuko.textContent = 'всё хорошо';
-          resultLeuko.classList.add('result-good');
-        } else {
-          resultLeuko.textContent = 'выше или ниже нормы';
-          resultLeuko.classList.add('result-bad');
-        }
+      input.classList.remove("invalid");
+
+      const numericValue = parseFloat(value);
+      if (numericValue >= min && numericValue <= max) {
+        result.textContent = "Ещё поживёте";
+        result.className = "result good";
       } else {
-        resultLeuko.textContent = '';
+        result.textContent = "Вам пиздец";
+        result.className = "result bad";
       }
     }
 
-    function clearAll() {
-      document.getElementById('hemoglobin').value = '';
-      document.getElementById('leukocytes').value = '';
-      document.getElementById('result-hemo').textContent = '';
-      document.getElementById('result-leuko').textContent = '';
-      document.getElementById('result-hemo').className = '';
-      document.getElementById('result-leuko').className = '';
-      document.getElementById('hemoglobin').classList.remove('error');
-      document.getElementById('leukocytes').classList.remove('error');
+    function clearFields() {
+      ["hemoglobin", "leukocytes"].forEach(id => {
+        const input = document.getElementById(id);
+        const result = document.getElementById(id + "-result");
+        input.value = '';
+        input.classList.remove("invalid");
+        result.textContent = '';
+        result.className = "result";
+      });
     }
-
-    window.onload = function () {
-      document.getElementById('hemoglobin').addEventListener('keydown', isAllowedKey);
-      document.getElementById('leukocytes').addEventListener('keydown', isAllowedKey);
-    };
   </script>
 
 </body>
